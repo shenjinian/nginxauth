@@ -1,5 +1,9 @@
 <?php
 
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
 $auth_key = "changeme";
 
 session_start();
@@ -24,5 +28,5 @@ setcookie("nginx_auth_hash", md5($auth_key."|".$auth_uid."|".$expire_time), $exp
 echo "hello $user<p>";
 
 $next=$_REQUEST["next"];
-echo "you are logged in, please go <a href=$next>$next</a>.";
+echo "you are logged in, please go <a href=\"$next\">$next</a>.";
 ?>

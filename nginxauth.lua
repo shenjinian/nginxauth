@@ -4,6 +4,9 @@
 
 local secret_key = 'please call nginxauth.set_secret_key() to change this key!'
 local auth_url_fmt = '/nginx_auth/?%s'
+local white_ipv4_list = {}
+local white_ipv6_list = {}
+local behind_proxy = false
 
 local function set_secret_key (key)
     secret_key = key
@@ -38,24 +41,47 @@ local function ip2num (ip)
     local o1,o2,o3,o4 = ip:match("(%d%d?%d?)%.(%d%d?%d?)%.(%d%d?%d?)%.(%d%d?%d?)" )
     return 2^24*o1 + 2^16*o2 + 2^8*o3 + o4
 end
+local function set_white_ipv4_list (v4_list)
+    white_ipv4_list = v4_list
+end
 
-local ustc_ip = {
-"202.38.64.0", "202.38.95.255"
-}
+local function set_white_ipv6_list (v6_list)
+    white_ipv6_list = v6list
+end
 
-local function access (...)
+local function  set_behind_proxy (v)
+    behind_proxy = v
+end
+
+local function access ()
     local headers=ngx.req.get_headers()
-    local clientip=headers["X-REAL-IP"] or headers["X_FORWARDED_FOR"] or ngx.var.remote_addr or "0.0.0.0"
-    ngx.log(ngx.ERR,"ip="..clientip)   
-    for i=1, #ustc_ip do
-       nginx.log(nginx.ERR,"i="..i)
-       if (ip2num(clientip)>=ip2num(ustc_ip[i]) and (ip2num(clientip)<=ip2num(ustc_ip[i+1])) then
-           nginx.log(nginx.ERR,"ustc_ip")
-           return
-       end
-       i = i + 1
+    local clientip=""
+    if behind_proxy then
+        clientip=headers["X-REAL-IP"] or headers["X_FORWARDED_FOR"] or ngx.var.remote_addr or "0.0.0.0"
+    else
+        clientip=ngx.var.remote_addr or "0.0.0.0"
     end
-    uid = get_uid(...)
+    ngx.log(ngx.ERR,"ip="..clientip)   
+    if string.find(clientip,":") then  -- IPv6 client
+	if #white_ipv6_list >= 1 then
+            for i=1, #white_ipv6_list - 1 do
+                if string.find(clientip,white_ipv6_list[i]) ~= nil then
+                    return
+		end
+            end
+	end
+    else  -- check IPv4
+	if #white_ipv4_list >= 2 then
+            for i=1, #white_ipv4_list - 1, 2 do
+               ngx.log(ngx.ERR,"i="..i)
+               if (ip2num(clientip)>=ip2num(white_ipv4_list[i])) and (ip2num(clientip)<=ip2num(white_ipv4_list[i+1])) then
+                   ngx.log(ngx.ERR,"white_ip")
+                   return
+               end
+	    end
+        end
+    end
+    uid = get_uid()
     if uid == nil then
         ngx.header['Location'] = get_auth_url()
         ngx.exit(ngx.HTTP_MOVED_TEMPORARILY)
@@ -65,6 +91,9 @@ end
 local P = {
     set_secret_key = set_secret_key,
     set_auth_url_fmt = set_auth_url_fmt,
+    set_white_ipv4_list = set_white_ipv4_list,
+    set_white_ipv6_list = set_white_ipv6_list,
+    set_behind_proxy = set_behind_proxy,
     access = access
 }
 
