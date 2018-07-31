@@ -13,7 +13,7 @@
 3. /nginx_auth/是一段php程序（也可以是其他认证）。完成用户认证后，将 `nginx_auth_uid，nginx_auth_expire, nginx_auth_hash` 写入cookie。
 
 4. 认证后重定向到之前访问的URL（next参数），这时因为cookie中有个三个参数的信息，经过检查后会返回源站内容。
-
+```
 
 致谢：代码参考了 https://github.com/StephenPCG/nginx-lua-simpleauth-module
 
