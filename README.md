@@ -10,9 +10,8 @@
 
 认证后，根据以上三个cookie信息，在一定时间内，返回源站内容。
 
-please also check
+致谢：代码参考了 https://github.com/StephenPCG/nginx-lua-simpleauth-module
 
-https://github.com/hamishforbes/lua-resty-iputils
 
 ![登录过程](img/login.jpg)
 
