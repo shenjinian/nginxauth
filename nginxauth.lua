@@ -49,7 +49,7 @@ local function access (...)
     ngx.log(ngx.ERR,"ip="..clientip)   
     for i=1, #ustc_ip do
        nginx.log(nginx.ERR,"i="..i)
-       if (ip2num(clientip)>=ip2num(ustc_ip[i]) and (ip2num(clientip)<=ip2num(ustc_ip[i+1]) then
+       if (ip2num(clientip)>=ip2num(ustc_ip[i]) and (ip2num(clientip)<=ip2num(ustc_ip[i+1])) then
            nginx.log(nginx.ERR,"ustc_ip")
            return
        end
