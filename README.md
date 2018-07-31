@@ -4,11 +4,16 @@
 
 原理：使用nginx lua中的access_by_lua功能，在每次访问时，通过lua程序判断是否允许访问。
 
-首先根据IP地址判断，如果在白名单内，直接返回源站内容。
+```
+1. 首先根据IP地址判断，如果在白名单内，直接返回源站内容。
 
-否则进行用户认证。认证后，将 nginx_auth_uid，nginx_auth_expire, nginx_auth_hash 写入cookie。
+2. 否则检查cookie是否有`nginx_auth_uid，nginx_auth_expire, nginx_auth_hash`三个参数，且`ngxi_auth_expire<当前时间`, 且`nginx_auth_hash = md5(nginx_auth_uid '|' nginx_auth_expire)`。
+如果正确，说明是认证过的用户，返回源站内容。否则重定向到 `/nginx_auth/` 进行用户认证。
 
-认证后，根据以上三个cookie信息，在一定时间内，返回源站内容。
+3. /nginx_auth/是一段php程序（也可以是其他认证）。完成用户认证后，将 `nginx_auth_uid，nginx_auth_expire, nginx_auth_hash` 写入cookie。
+
+4. 认证后重定向到之前访问的URL（next参数），这时因为cookie中有个三个参数的信息，经过检查后会返回源站内容。
+
 
 致谢：代码参考了 https://github.com/StephenPCG/nginx-lua-simpleauth-module
 
