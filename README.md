@@ -10,5 +10,5 @@ please also check
 
 https://github.com/hamishforbes/lua-resty-iputils
 
-![登录过程](img/login.jgp)
+![登录过程](img/login.jpg)
 
